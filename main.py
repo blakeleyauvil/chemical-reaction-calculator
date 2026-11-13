@@ -1,3 +1,4 @@
+
 from drafter import *
 from dataclasses import dataclass
 from bakery import assert_equal
@@ -20,6 +21,7 @@ class State:
     reactant2_mass: float
     actual_yield: float
     history: list[Result]
+    current_result: Result
 
 
 # Converts grams into moles
@@ -156,20 +158,31 @@ def calculate(state: State, mass1: str,
     theoretical = product_moles * mm3
     percent = percent_yield(state.actual_yield, theoretical)
 
-    return results(state, limiting, theoretical, percent)
+    # Store the current calculation
+    state.current_result = Result(
+        state.reaction,
+        limiting,
+        theoretical,
+        percent
+    )
+
+    return results(state)
 
 
 # RESULTS PAGE
 @route
-def results(state: State, limiting: str,
-            theoretical: float, percent: float) -> Page:
+def results(state: State) -> Page:
     """Displays the limiting reactant and calculated yields."""
+    result = state.current_result
+
     return Page(state, [
         Header("Results"),
-        "Reaction: " + state.reaction,
-        "Limiting Reactant: " + limiting,
-        "Theoretical Yield: " + str(round(theoretical, 2)) + " g",
-        "Percent Yield: " + str(round(percent, 2)) + "%",
+        "Reaction: " + result.name,
+        "Limiting Reactant: " + result.limiting_reactant,
+        "Theoretical Yield: " +
+            str(round(result.theoretical_yield, 2)) + " g",
+        "Percent Yield: " +
+            str(round(result.percent_yield, 2)) + "%",
         Button("Save Result", save_result),
         Button("New Calculation", select_reaction),
         Button("Home", index)
@@ -178,22 +191,16 @@ def results(state: State, limiting: str,
 
 # SAVE RESULT
 @route
-def save_result(state: State, limiting: str,
-                theoretical: float, percent: float) -> Page:
+def save_result(state: State) -> Page:
     """Saves the current calculation to the history list."""
-    new_result = Result(
-        state.reaction,
-        limiting,
-        theoretical,
-        percent
-    )
 
-    state.history.append(new_result)
+    state.history.append(state.current_result)
 
     return Page(state, [
         Header("Result Saved"),
         "Your calculation has been saved.",
         Button("View History", history),
+        Button("New Calculation", select_reaction),
         Button("Home", index)
     ])
 
@@ -235,4 +242,8 @@ assert_equal(percent_yield(8, 10), 80.0)
 
 
 # START WEBSITE
-start_server(State("", 0.0, 0.0, 0.0, []))
+start_server(State(
+    "", 0.0, 0.0, 0.0, [],
+    Result("", "", 0.0, 0.0)
+))
+
