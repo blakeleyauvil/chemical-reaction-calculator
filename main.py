@@ -234,22 +234,5 @@ assert_equal(grams_to_moles(32, 32), 1.0)
 assert_equal(percent_yield(8, 10), 80.0)
 
 
-set_website_title("Chemical Reaction Yield Calculator")
-
-set_site_information(
-    author="Blakeley Auvil",
-    description="A chemistry calculator that finds the limiting reactant, theoretical yield, and percent yield.",
-    sources="Drafter documentation, chemistry class notes, and ChatGPT.",
-    planning=[
-        "Blakeley Auvil - CS1 Final Project 0_ Pick a Problem.pdf",
-        "Blakeley Auvil - CS1 Final Project 1_ Design.pdf"
-    ]
-)
-
-hide_debug_information()
-set_website_framed(False)
-
-
 # START WEBSITE
 start_server(State("", 0.0, 0.0, 0.0, []))
-
